@@ -11,7 +11,7 @@ type Props = {
 
 export function Preview({ markdown }: Props) {
   return (
-    <div className="prose prose-slate dark:prose-invert max-w-none [column-fill:_balance]">
+    <div className="markdown-body max-w-none [column-fill:_balance]">
       <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{markdown}</ReactMarkdown>
     </div>
   );

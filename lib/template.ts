@@ -118,6 +118,21 @@ function renderBadges(preset: string[]) {
   return presetBadges.join("\n");
 }
 
+function renderBadgesHtml(preset: string[]) {
+  const imgs = preset
+    .map((key) => BADGE_DEFS[key])
+    .filter(Boolean)
+    .map((def) => {
+      const label = encodeURIComponent(def.label);
+      const color = def.color || "informational";
+      const logo = def.logo ? `&logo=${encodeURIComponent(def.logo)}` : "";
+      const src = `https://img.shields.io/badge/${label}-${color}?style=flat${logo}&logoColor=white`;
+      return `<img alt="${def.label}" src="${src}" />`;
+    })
+    .join("\n");
+  return `<div>\n${imgs}\n</div>`;
+}
+
 // (obsolete) rendu en liste, remplacé par des badges
 
 function renderSoftSkills(preset: string[], custom: string) {
@@ -128,6 +143,20 @@ function renderSoftSkills(preset: string[], custom: string) {
   const all = [...preset, ...customs];
   if (all.length === 0) return "";
   return all.map((s) => `- ${s}`).join("\n");
+}
+
+function renderSoftSkillsHtml(preset: string[], custom: string) {
+  const customs = custom
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const all = [...preset, ...customs];
+  if (all.length === 0) return "";
+  return [
+    "<ul>",
+    ...all.map((s) => `<li>${s}</li>`),
+    "</ul>",
+  ].join("\n");
 }
 // plus de rendu skillsAsBadges: on réutilise directement renderBadges pour "Compétences"
 
@@ -142,11 +171,11 @@ export function generateReadme(values: FormValues): string {
     lines.push("\n" + values.bio + "\n");
   }
 
-  // Colonnes: Compétences (badges) vs Soft skills
+  // Colonnes: Compétences (badges) vs Compétences comportementales
   if (values.sections.badges && values.sections.softSkills) {
-    const hard = renderBadges(values.badgesPreset);
-    const soft = renderSoftSkills(values.softSkillsPreset, values.softSkillsCustom);
-    lines.push("## Compétences et Soft skills");
+    const hard = renderBadgesHtml(values.badgesPreset);
+    const soft = renderSoftSkillsHtml(values.softSkillsPreset, values.softSkillsCustom);
+    lines.push("## Compétences techniques et comportementales");
     lines.push(
       [
         "<table><tr>",
@@ -155,7 +184,7 @@ export function generateReadme(values: FormValues): string {
         hard || "",
         "</td>",
         "<td>",
-        "<h3>Soft skills</h3>",
+        "<h3>Compétences comportementales</h3>",
         soft || "",
         "</td>",
         "</tr></table>",
@@ -170,7 +199,7 @@ export function generateReadme(values: FormValues): string {
       lines.push("");
     }
     if (values.sections.softSkills) {
-      lines.push("## Soft skills");
+      lines.push("## Compétences comportementales");
       const soft = renderSoftSkills(values.softSkillsPreset, values.softSkillsCustom);
       if (soft) lines.push(soft);
       lines.push("");
@@ -179,13 +208,14 @@ export function generateReadme(values: FormValues): string {
   // Plus de section Badges séparée: renommée en Compétences
 
   if (values.sections.keySkills && values.keySkills?.length) {
-    lines.push("## Compétences clés");
+    const sectionTitle = values.style === "colorful" ? "## 💡 Compétences clés" : "## Compétences clés";
+    lines.push(sectionTitle);
     values.keySkills.slice(0, 3).forEach((item) => {
       const parts: string[] = [];
       if (!item || !item.name?.trim()) return;
-      let line = `- ${item.name.trim()}`;
-      if (item.repo?.trim()) parts.push(`[Repo](${item.repo.trim()})`);
-      if (item.link?.trim()) parts.push(`[Lien](${item.link.trim()})`);
+      let line = values.style === "emoji" ? `- ⭐ ${item.name.trim()}` : `- ${item.name.trim()}`;
+      if (item.repo?.trim()) parts.push(`[Dépôt](${item.repo.trim()})`);
+      if (item.link?.trim()) parts.push(`[Ressource](${item.link.trim()})`);
       if (parts.length) line += ` — ${parts.join(" · ")}`;
       lines.push(line);
     });
@@ -193,10 +223,36 @@ export function generateReadme(values: FormValues): string {
   }
 
   if (values.sections.stats && values.username) {
-    lines.push("## Stats GitHub");
+    lines.push("## Statistiques GitHub");
     const theme = encodeURIComponent(values.statsTheme || "radical");
+    const uname = encodeURIComponent(values.username);
+    // Carte principale
     lines.push(
-      `![GitHub Stats](https://github-readme-stats.vercel.app/api?username=${values.username}&show_icons=true&theme=${theme})`
+      `![Statistiques GitHub](https://github-readme-stats.vercel.app/api?username=${values.username}&show_icons=true&theme=${theme})`
+    );
+    lines.push("\n---\n");
+    // Deux cartes côte à côte
+    const topLangsImg = `https://github-readme-stats.vercel.app/api/top-langs/?username=${uname}&layout=compact&theme=dracula`;
+    const streakImg = `https://streak-stats.demolab.com?user=${uname}&theme=dracula&hide_border=true`;
+    lines.push(
+      [
+        "<table><tr>",
+        "<td valign=\"top\">",
+        "<h4>Langages les plus utilisés</h4>",
+        `<img alt=\"Langages les plus utilisés\" src=\"${topLangsImg}\" />`,
+        "</td>",
+        "<td valign=\"top\">",
+        "<h4>Série de contributions</h4>",
+        `<img alt=\"Série de contributions\" src=\"${streakImg}\" />`,
+        "</td>",
+        "</tr></table>",
+      ].join("\n")
+    );
+    lines.push("\n---\n");
+    // Graphique d'activité large
+    lines.push("### Graphique d'activité");
+    lines.push(
+      `![Graphique d'activité GitHub](https://github-readme-activity-graph.vercel.app/graph?username=${uname}&theme=dracula)`
     );
     lines.push("");
   }
