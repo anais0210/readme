@@ -177,7 +177,7 @@ export function generateReadme(values: FormValues): string {
   if (values.sections.badges && values.sections.softSkills) {
     const hard = renderBadgesHtml(values.badgesPreset);
     const soft = renderSoftSkillsHtml(values.softSkillsPreset, values.softSkillsCustom);
-    lines.push(values.style === "emoji" ? "## 🛠️🤝 Compétences techniques et comportementales" : "## Compétences techniques et comportementales");
+    lines.push(values.style === "emoji" ? "## 🛠️🤝 Compétences " : "## Compétences techniques");
     lines.push(
       [
         "<table><tr>",
