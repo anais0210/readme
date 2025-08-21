@@ -173,7 +173,7 @@ export function generateReadme(values: FormValues): string {
     lines.push("\n" + values.bio + "\n");
   }
 
-  // Colonnes: Compétences (badges) vs Compétences comportementales
+  // Colonnes: Compétences (badges) vs Compétences 
   if (values.sections.badges && values.sections.softSkills) {
     const hard = renderBadgesHtml(values.badgesPreset);
     const soft = renderSoftSkillsHtml(values.softSkillsPreset, values.softSkillsCustom);
@@ -186,7 +186,7 @@ export function generateReadme(values: FormValues): string {
         hard || "",
         "</td>",
         "<td>",
-        values.style === "emoji" ? "<h3>🤝 Compétences comportementales</h3>" : "<h3>Compétences comportementales</h3>",
+        values.style === "emoji" ? "<h3>🤝 Compétences</h3>" : "<h3>Compétences</h3>",
         soft || "",
         "</td>",
         "</tr></table>",
@@ -201,7 +201,7 @@ export function generateReadme(values: FormValues): string {
       lines.push("");
     }
     if (values.sections.softSkills) {
-      lines.push(values.style === "emoji" ? "## 🤝 Compétences comportementales" : "## Compétences comportementales");
+      lines.push(values.style === "emoji" ? "## 🤝 Compétences" : "## Compétences");
       const soft = renderSoftSkills(values.softSkillsPreset, values.softSkillsCustom);
       if (soft) lines.push(soft);
       lines.push("");
