@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { generateReadme, type FormValues } from "@/lib/template";
 import { Copy, Download, Moon, Sun } from "lucide-react";
@@ -38,6 +38,8 @@ const SOFT_SKILLS = [
 
 export default function Page() {
   const { setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const { register, watch, setValue } = useForm<FormValues>({
     defaultValues: {
       name: "",
@@ -105,8 +107,8 @@ export default function Page() {
           onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
           className="inline-flex items-center gap-2 rounded-md border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
         >
-          {resolvedTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-          {resolvedTheme === "dark" ? "Clair" : "Sombre"}
+          {mounted ? (resolvedTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />) : null}
+          {mounted ? (resolvedTheme === "dark" ? "Clair" : "Sombre") : ""}
         </button>
       </header>
 
@@ -291,7 +293,7 @@ export default function Page() {
 
           <hr className="border-slate-200 dark:border-slate-800" />
 
-          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4 overflow-auto max-h-[70vh] bg-white dark:bg-slate-950">
+          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4 overflow-auto max-h-[70vh]" style={{ background: "var(--background)", color: "var(--foreground)" }}>
             <div className={previewColsClass}>
               <Preview markdown={markdown} />
             </div>
@@ -299,7 +301,7 @@ export default function Page() {
 
           <hr className="border-slate-200 dark:border-slate-800" />
 
-          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4 bg-white dark:bg-slate-950">
+          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4" style={{ background: "var(--background)", color: "var(--foreground)" }}>
             <label className="block text-sm mb-2">Markdown brut</label>
             <textarea
               readOnly
