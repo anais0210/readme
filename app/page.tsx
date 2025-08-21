@@ -55,9 +55,10 @@ export default function Page() {
       badgesPreset: ["TypeScript","React","NextJS","Tailwind","GitHub"],
       style: "emoji",
       statsTheme: "radical",
-      sections: { bio: true, softSkills: true, projects: false, badges: true, stats: true, links: true, fun: false },
+      sections: { bio: true, softSkills: true, projects: false, badges: true, stats: true, links: true, fun: false, changelog: false },
       funFact: "",
       quote: "",
+      changelogImageUrl: "",
     },
     mode: "onChange",
   });
@@ -201,6 +202,10 @@ export default function Page() {
                 <label className="block text-sm mb-1" htmlFor="lws">Site / Portfolio</label>
                 <input id="lws" {...register("links.website")} className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2" placeholder="https://mon-site.dev" />
               </div>
+              <div>
+                <label className="block text-sm mb-1" htmlFor="chg">Changelog dynamique (URL d’image)</label>
+                <input id="chg" {...register("changelogImageUrl")} className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2" placeholder="https://cdn.gitclear.com/snap/uuid.png" />
+              </div>
             </div>
           </fieldset>
           <fieldset className="space-y-3">
@@ -233,6 +238,7 @@ export default function Page() {
                 ["stats","Stats GitHub"],
                 ["links","Liens"],
                 ["fun","Fun/Citation"],
+                ["changelog","Changelog"],
               ] as const).map(([k, label]) => (
                 <label key={k} className="inline-flex items-center gap-2 text-sm">
                   <input

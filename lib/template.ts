@@ -9,6 +9,7 @@ export type FormValues = {
     repo?: string;
     link?: string;
   }>;
+  changelogImageUrl?: string;
   links: {
     github: string;
     linkedin: string;
@@ -26,6 +27,7 @@ export type FormValues = {
     stats: boolean;
     links: boolean;
     fun: boolean;
+    changelog?: boolean;
   };
   funFact: string;
   quote: string;
@@ -175,16 +177,16 @@ export function generateReadme(values: FormValues): string {
   if (values.sections.badges && values.sections.softSkills) {
     const hard = renderBadgesHtml(values.badgesPreset);
     const soft = renderSoftSkillsHtml(values.softSkillsPreset, values.softSkillsCustom);
-    lines.push("## Compétences techniques et comportementales");
+    lines.push(values.style === "emoji" ? "## 🛠️🤝 Compétences techniques et comportementales" : "## Compétences techniques et comportementales");
     lines.push(
       [
         "<table><tr>",
         "<td>",
-        "<h3>Compétences</h3>",
+        values.style === "emoji" ? "<h3>🛠️ Compétences</h3>" : "<h3>Compétences</h3>",
         hard || "",
         "</td>",
         "<td>",
-        "<h3>Compétences comportementales</h3>",
+        values.style === "emoji" ? "<h3>🤝 Compétences comportementales</h3>" : "<h3>Compétences comportementales</h3>",
         soft || "",
         "</td>",
         "</tr></table>",
@@ -193,13 +195,13 @@ export function generateReadme(values: FormValues): string {
     lines.push("");
   } else {
     if (values.sections.badges) {
-      lines.push("## Compétences");
+      lines.push(values.style === "emoji" ? "## 🛠️ Compétences" : "## Compétences");
       const skills = renderBadges(values.badgesPreset);
       if (skills) lines.push(skills);
       lines.push("");
     }
     if (values.sections.softSkills) {
-      lines.push("## Compétences comportementales");
+      lines.push(values.style === "emoji" ? "## 🤝 Compétences comportementales" : "## Compétences comportementales");
       const soft = renderSoftSkills(values.softSkillsPreset, values.softSkillsCustom);
       if (soft) lines.push(soft);
       lines.push("");
@@ -208,7 +210,7 @@ export function generateReadme(values: FormValues): string {
   // Plus de section Badges séparée: renommée en Compétences
 
   if (values.sections.keySkills && values.keySkills?.length) {
-    const sectionTitle = values.style === "colorful" ? "## 💡 Compétences clés" : "## Compétences clés";
+    const sectionTitle = values.style === "emoji" ? "## 💡 Compétences clés" : values.style === "colorful" ? "## 💡 Compétences clés" : "## Compétences clés";
     lines.push(sectionTitle);
     values.keySkills.slice(0, 3).forEach((item) => {
       const parts: string[] = [];
@@ -223,7 +225,7 @@ export function generateReadme(values: FormValues): string {
   }
 
   if (values.sections.stats && values.username) {
-    lines.push("## Statistiques GitHub");
+    lines.push(values.style === "emoji" ? "## 📊 Statistiques GitHub" : "## Statistiques GitHub");
     const theme = encodeURIComponent(values.statsTheme || "radical");
     const uname = encodeURIComponent(values.username);
     // Carte principale
@@ -238,11 +240,11 @@ export function generateReadme(values: FormValues): string {
       [
         "<table><tr>",
         "<td valign=\"top\">",
-        "<h4>Langages les plus utilisés</h4>",
+        values.style === "emoji" ? "<h4>💻 Langages les plus utilisés</h4>" : "<h4>Langages les plus utilisés</h4>",
         `<img alt=\"Langages les plus utilisés\" src=\"${topLangsImg}\" />`,
         "</td>",
         "<td valign=\"top\">",
-        "<h4>Série de contributions</h4>",
+        values.style === "emoji" ? "<h4>🔥 Série de contributions</h4>" : "<h4>Série de contributions</h4>",
         `<img alt=\"Série de contributions\" src=\"${streakImg}\" />`,
         "</td>",
         "</tr></table>",
@@ -250,7 +252,7 @@ export function generateReadme(values: FormValues): string {
     );
     lines.push("\n---\n");
     // Graphique d'activité large
-    lines.push("### Graphique d'activité");
+    lines.push(values.style === "emoji" ? "### 📈 Graphique d'activité" : "### Graphique d'activité");
     lines.push(
       `![Graphique d'activité GitHub](https://github-readme-activity-graph.vercel.app/graph?username=${uname}&theme=dracula)`
     );
@@ -258,7 +260,7 @@ export function generateReadme(values: FormValues): string {
   }
 
   if (values.sections.links) {
-    lines.push("## Liens");
+    lines.push(values.style === "emoji" ? "## 🔗 Liens" : "## Liens");
     const badges: string[] = [];
     if (values.links.github) {
       badges.push(
@@ -280,9 +282,16 @@ export function generateReadme(values: FormValues): string {
   }
 
   if (values.sections.fun && (values.funFact || values.quote)) {
-    lines.push("## Fun");
-    if (values.funFact) lines.push(`- Fun fact: ${values.funFact}`);
-    if (values.quote) lines.push(`> ${values.quote}`);
+    lines.push(values.style === "emoji" ? "## 🎉 Fun" : "## Fun");
+    if (values.funFact) lines.push(values.style === "emoji" ? `- 🎯 Fun fact: ${values.funFact}` : `- Fun fact: ${values.funFact}`);
+    if (values.quote) lines.push(values.style === "emoji" ? `> 💬 ${values.quote}` : `> ${values.quote}`);
+    lines.push("");
+  }
+
+  // Changelog dynamique (GitClear ou autre image dynamique)
+  if (values.sections.changelog && values.changelogImageUrl) {
+    lines.push(values.style === "emoji" ? "## 📰 Changelog dynamique" : "## Changelog dynamique");
+    lines.push(`![Changelog](${values.changelogImageUrl})`);
     lines.push("");
   }
 

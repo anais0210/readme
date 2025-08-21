@@ -7,7 +7,7 @@ Application Next.js permettant de composer un README de profil GitHub moderne, a
 - Identité et bio (prénom/pseudo, nom d’utilisateur·ice GitHub)
 - Liens stylisés en badges cliquables (GitHub, LinkedIn, Site web)
 - Compétences techniques via badges (catégories repliables)
-- Compétences comportementales (Soft skills)
+- Compétences (Soft skills)
 - Compétences clés (jusqu’à 3) avec liens vers dépôt et ressource
 - Prévisualisation “GitHub-like” (support GFM + HTML) et copie/téléchargement du Markdown
 - Thème clair/sombre, nombre de colonnes ajustable pour la prévisualisation
