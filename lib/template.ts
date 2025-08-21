@@ -259,11 +259,23 @@ export function generateReadme(values: FormValues): string {
 
   if (values.sections.links) {
     lines.push("## Liens");
-    const links: string[] = [];
-    if (values.links.github) links.push(`- GitHub: ${values.links.github}`);
-    if (values.links.linkedin) links.push(`- LinkedIn: ${values.links.linkedin}`);
-    if (values.links.website) links.push(`- Site: ${values.links.website}`);
-    if (links.length) lines.push(links.join("\n"));
+    const badges: string[] = [];
+    if (values.links.github) {
+      badges.push(
+        `[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](${values.links.github})`
+      );
+    }
+    if (values.links.linkedin) {
+      badges.push(
+        `[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white)](${values.links.linkedin})`
+      );
+    }
+    if (values.links.website) {
+      badges.push(
+        `[![Site web](https://img.shields.io/badge/Site%20web-0ea5e9?logoColor=white)](${values.links.website})`
+      );
+    }
+    if (badges.length) lines.push(badges.join("\n"));
     lines.push("");
   }
 

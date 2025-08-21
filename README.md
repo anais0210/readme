@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Générateur de README GitHub
 
-## Getting Started
+Application Next.js permettant de composer un README de profil GitHub moderne, avec prévisualisation fidèle au rendu GitHub.
 
-First, run the development server:
+## Fonctionnalités
+
+- Identité et bio (prénom/pseudo, nom d’utilisateur·ice GitHub)
+- Liens stylisés en badges cliquables (GitHub, LinkedIn, Site web)
+- Compétences techniques via badges (catégories repliables)
+- Compétences comportementales (Soft skills)
+- Compétences clés (jusqu’à 3) avec liens vers dépôt et ressource
+- Prévisualisation “GitHub-like” (support GFM + HTML) et copie/téléchargement du Markdown
+- Thème clair/sombre, nombre de colonnes ajustable pour la prévisualisation
+- Statistiques GitHub: carte Stats, Langages les plus utilisés, Streak, et Graphique d’activité
+
+## Stack
+
+- Next.js 15 (App Router) + TypeScript
+- Tailwind CSS v4
+- React Hook Form, next-themes
+- react-markdown + remark-gfm + rehype-raw
+- github-markdown-css (styles GitHub pour le rendu)
+- lucide-react (icônes)
+
+## Prérequis
+
+- Node.js ≥ 18
+
+## Installation
 
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `npm run dev`: serveur de développement (Turbopack)
+- `npm run build`: build de production
+- `npm run start`: serveur de production
+- `npm run lint`: linting
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Personnalisation rapide
 
-## Learn More
+- Rendu/sections: `lib/template.ts`
+- Formulaire/UI: `app/page.tsx`
+- Styles globaux: `app/globals.css` (inclut les styles GitHub)
 
-To learn more about Next.js, take a look at the following resources:
+## Déploiement sur Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Framework preset: Next.js (auto)
+- Build Command: `next build`
+- Output: `.next`
+- Root Directory: racine du projet
+- Conseils:
+  - Un seul lockfile à la racine
+  - Ajouter une page `app/not-found.tsx` (recommandé) et un `app/favicon.ico`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notes d’accessibilité
 
-## Deploy on Vercel
+- Contrastes adaptés en clair/sombre, structure sémantique, contrôles clavier
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Limitations connues
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Les services d’images tiers (stats/langs/streak/graph) peuvent être soumis à du rate limiting
+
+## Licence
+
+À définir par le/la propriétaire du projet.
