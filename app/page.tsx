@@ -106,7 +106,11 @@ export default function Page() {
         <button
           aria-label="Basculer le thème"
           onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-          className="inline-flex items-center gap-2 rounded-md border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
+          className={`inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition
+          ${resolvedTheme === "light" 
+            ? "bg-slate-900 text-white border-black hover:bg-gray-500" 
+            : "bg-slate-100 text-black border-slate-700 hover:bg-gray-500"
+          }`}
         >
           {mounted ? (resolvedTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />) : null}
           {mounted ? (resolvedTheme === "dark" ? "Clair" : "Sombre") : ""}
@@ -213,19 +217,19 @@ export default function Page() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm mb-1" htmlFor="style">Style</label>
-                <select id="style" {...register("style")} className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2">
-                  <option value="minimal">Minimal</option>
-                  <option value="colorful">Coloré</option>
-                  <option value="emoji">Avec emojis</option>
+                <select id="style" {...register("style")} className="w-full rounded-md border border-slate-300 dark:border-slate-700 dark:text-white bg-transparent px-3 py-2">
+                  <option className="bg-white text-black dark:bg-black dark:text-white" value="minimal">Minimal</option>
+                  <option className="bg-white text-black dark:bg-black dark:text-white" value="colorful">Coloré</option>
+                  <option className="bg-white text-black dark:bg-black dark:text-white" value="emoji">Avec emojis</option>
                 </select>
               </div>
               <div>
                 <label className="block text-sm mb-1" htmlFor="statsTheme">Thème stats GitHub</label>
                 <select id="statsTheme" {...register("statsTheme")} className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2">
-                  <option value="default">Default</option>
-                  <option value="radical">Radical</option>
-                  <option value="tokyonight">Tokyo Night</option>
-                  <option value="github_dark">GitHub Dark</option>
+                  <option className="bg-white text-black dark:bg-black dark:text-white" value="default">Default</option>
+                  <option className="bg-white text-black dark:bg-black dark:text-white" value="radical">Radical</option>
+                  <option className="bg-white text-black dark:bg-black dark:text-white" value="tokyonight">Tokyo Night</option>
+                  <option className="bg-white text-black dark:bg-black dark:text-white" value="github_dark">GitHub Dark</option>
                 </select>
               </div>
             </div>
@@ -278,9 +282,9 @@ export default function Page() {
                 onChange={(e) => setPreviewCols(Number(e.target.value))}
                 className="rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-sm"
               >
-                <option value={1}>1</option>
-                <option value={2}>2</option>
-                <option value={3}>3</option>
+                <option className="bg-slate-100 text-slate-900 dark:focus:bg-slate-900 dark:text-slate-100" value={1}>1</option>
+                <option className="bg-white text-black dark:focus:bg-black dark:text-white" value={2}>2</option>
+                <option className="bg-white text-black dark:bg-black dark:text-white" value={3}>3</option>
               </select>
               <button
                 onClick={copyToClipboard}
