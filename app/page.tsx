@@ -40,7 +40,7 @@ export default function Page() {
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const { register, watch, setValue } = useForm<FormValues>({
+  const { register, watch, setValue, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
       name: "",
       username: "",
@@ -128,7 +128,20 @@ export default function Page() {
             </div>
             <div>
               <label className="block text-sm mb-1" htmlFor="username">Nom d’utilisateurice GitHub</label>
-              <input id="username" {...register("username")} className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2" placeholder="octocat" />
+              <input
+                id="username"
+                {...register("username", { required: "Nom d’utilisateurice GitHub obligatoire" })}
+                required
+                aria-invalid={!!errors.username}
+                aria-describedby="username-error"
+                className={`w-full rounded-md border bg-transparent px-3 py-2 ${errors.username ? "border-red-500 dark:border-red-500" : "border-slate-300 dark:border-slate-700"}`}
+                placeholder="octocat"
+              />
+              {errors.username ? (
+                <p id="username-error" role="alert" className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.username.message?.toString() || "Champ obligatoire"}
+                </p>
+              ) : null}
             </div>
             <div>
               <label className="block text-sm mb-1" htmlFor="bio">Bio</label>
