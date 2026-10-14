@@ -12,13 +12,11 @@ export function ThemeProvider({ children }: Props) {
     <NextThemesProvider
       attribute="class"
       themes={["light", "dark"]}
-      defaultTheme="light"
-      enableSystem={false}
+      defaultTheme="system"
+      enableSystem
       enableColorScheme
     >
       {children}
     </NextThemesProvider>
   );
 }
-
-
