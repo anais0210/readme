@@ -1,4 +1,9 @@
 @import "tailwindcss";
+@import "github-markdown-css/github-markdown.css";
+@import "./markdown-theme.css";
+
+/* Les utilitaires dark: suivent la classe posée par next-themes (et non l'OS) */
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #ffffff;
@@ -20,10 +25,29 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Focus clavier toujours visible */
+:focus-visible {
+  outline: 2px solid #0369a1;
+  outline-offset: 2px;
+}
+.dark :focus-visible {
+  outline-color: #7dd3fc;
 }
 
 /* Forcer la prévisualisation à hériter du fond (fixe le blanc en dark) */
 .markdown-body {
   background-color: var(--background);
+}
+
+/* GitHub respecte valign="top" ; React ne le transmet pas à l'aperçu */
+.markdown-body td {
+  vertical-align: top;
+}
+
+/* Le preflight Tailwind met les images en block ; GitHub les affiche en ligne (badges côte à côte) */
+.markdown-body img {
+  display: inline;
 }

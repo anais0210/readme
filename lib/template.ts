@@ -1,301 +1,321 @@
-export type FormValues = {
-  name: string;
-  username: string;
-  bio: string;
-  softSkillsPreset: string[];
-  softSkillsCustom: string;
-  keySkills: Array<{
-    name: string;
-    repo?: string;
-    link?: string;
-  }>;
-  changelogImageUrl?: string;
-  links: {
-    github: string;
-    linkedin: string;
-    website: string;
-  };
-  badgesPreset: string[];
-  style: "minimal" | "colorful" | "emoji";
-  statsTheme: string;
-  sections: {
-    bio: boolean;
-    softSkills: boolean;
-    keySkills: boolean;
-    projects: boolean;
-    badges: boolean; // sera affiché comme "Compétences"
-    stats: boolean;
-    links: boolean;
-    fun: boolean;
-    changelog?: boolean;
-  };
-  funFact: string;
-  quote: string;
-};
+import { BADGE_DEFS, badgeUrl, parseCustomBadges, skillIconsUrl, type BadgeDef } from "./badges";
+import {
+  CONFIG_MARKER,
+  DEFAULT_STATS_BASE_URL,
+  DEFAULT_TROPHY_BASE_URL,
+  encodeConfig,
+  type FormValues,
+  type SectionKey,
+} from "./config";
 
-const BADGE_DEFS: Record<string, { label: string; logo?: string; color?: string }> = {
-  TypeScript: { label: "TypeScript", logo: "typescript", color: "3178C6" },
-  JavaScript: { label: "JavaScript", logo: "javascript", color: "F7DF1E" },
-  React: { label: "React", logo: "react", color: "61DAFB" },
-  NextJS: { label: "Next.js", logo: "nextdotjs", color: "000000" },
-  NodeJS: { label: "Node.js", logo: "nodedotjs", color: "339933" },
-  Express: { label: "Express", logo: "express", color: "000000" },
-  Tailwind: { label: "Tailwind CSS", logo: "tailwindcss", color: "38B2AC" },
-  CSS3: { label: "CSS3", logo: "css3", color: "1572B6" },
-  HTML5: { label: "HTML5", logo: "html5", color: "E34F26" },
-  Sass: { label: "Sass", logo: "sass", color: "CC6699" },
-  StyledComponents: { label: "styled-components", logo: "styledcomponents", color: "DB7093" },
-  Prisma: { label: "Prisma", logo: "prisma", color: "2D3748" },
-  MongoDB: { label: "MongoDB", logo: "mongodb", color: "47A248" },
-  PostgreSQL: { label: "PostgreSQL", logo: "postgresql", color: "4169E1" },
-  MySQL: { label: "MySQL", logo: "mysql", color: "4479A1" },
-  SQLite: { label: "SQLite", logo: "sqlite", color: "003B57" },
-  Redis: { label: "Redis", logo: "redis", color: "DC382D" },
-  GraphQL: { label: "GraphQL", logo: "graphql", color: "E10098" },
-  Apollo: { label: "Apollo", logo: "apollographql", color: "311C87" },
-  Docker: { label: "Docker", logo: "docker", color: "2496ED" },
-  Kubernetes: { label: "Kubernetes", logo: "kubernetes", color: "326CE5" },
-  AWS: { label: "AWS", logo: "amazonwebservices", color: "232F3E" },
-  GCP: { label: "Google Cloud", logo: "googlecloud", color: "4285F4" },
-  Azure: { label: "Azure", logo: "microsoftazure", color: "0078D4" },
-  Vercel: { label: "Vercel", logo: "vercel", color: "000000" },
-  Netlify: { label: "Netlify", logo: "netlify", color: "00C7B7" },
-  Git: { label: "Git", logo: "git", color: "F05032" },
-  GitHub: { label: "GitHub", logo: "github", color: "181717" },
-  GitLab: { label: "GitLab", logo: "gitlab", color: "FC6D26" },
-  Bitbucket: { label: "Bitbucket", logo: "bitbucket", color: "0052CC" },
-  Storybook: { label: "Storybook", logo: "storybook", color: "FF4785" },
-  Jest: { label: "Jest", logo: "jest", color: "C21325" },
-  Vitest: { label: "Vitest", logo: "vitest", color: "6E9F18" },
-  Cypress: { label: "Cypress", logo: "cypress", color: "17202C" },
-  Playwright: { label: "Playwright", logo: "playwright", color: "2EAD33" },
-  ESLint: { label: "ESLint", logo: "eslint", color: "4B32C3" },
-  Prettier: { label: "Prettier", logo: "prettier", color: "F7B93E" },
-  Webpack: { label: "Webpack", logo: "webpack", color: "8DD6F9" },
-  Vite: { label: "Vite", logo: "vite", color: "646CFF" },
-  Turbopack: { label: "Turbopack", logo: "turbopack", color: "EF4444" },
-  Redux: { label: "Redux", logo: "redux", color: "764ABC" },
-  Zustand: { label: "Zustand", logo: "zustand", color: "000000" },
-  ReactQuery: { label: "React Query", logo: "reactquery", color: "FF4154" },
-  FramerMotion: { label: "Framer Motion", logo: "framer", color: "0055FF" },
-  ReactNative: { label: "React Native", logo: "react", color: "61DAFB" },
-  Expo: { label: "Expo", logo: "expo", color: "000020" },
-  Python: { label: "Python", logo: "python", color: "3776AB" },
-  Django: { label: "Django", logo: "django", color: "092E20" },
-  Flask: { label: "Flask", logo: "flask", color: "000000" },
-  FastAPI: { label: "FastAPI", logo: "fastapi", color: "009688" },
-  Go: { label: "Go", logo: "go", color: "00ADD8" },
-  Rust: { label: "Rust", logo: "rust", color: "000000" },
-  Java: { label: "Java", logo: "coffeescript", color: "007396" },
-  Spring: { label: "Spring", logo: "spring", color: "6DB33F" },
-  PHP: { label: "PHP", logo: "php", color: "777BB4" },
-  Laravel: { label: "Laravel", logo: "laravel", color: "FF2D20" },
-  Symfony: { label: "Symfony", logo: "symfony", color: "000000" },
-  Ruby: { label: "Ruby", logo: "ruby", color: "CC342D" },
-  Rails: { label: "Rails", logo: "rubyonrails", color: "CC0000" },
-  CSharp: { label: "C#", logo: "csharp", color: "512BD4" },
-  DotNet: { label: ".NET", logo: "dotnet", color: "512BD4" },
-  CPlusPlus: { label: "C++", logo: "cplusplus", color: "00599C" },
-  Swift: { label: "Swift", logo: "swift", color: "FA7343" },
-  Kotlin: { label: "Kotlin", logo: "kotlin", color: "7F52FF" },
-  Android: { label: "Android", logo: "android", color: "3DDC84" },
-  iOS: { label: "iOS", logo: "apple", color: "000000" },
-  Figma: { label: "Figma", logo: "figma", color: "F24E1E" },
-  Jira: { label: "Jira", logo: "jira", color: "0052CC" },
-};
+export type { FormValues } from "./config";
 
-// Plus d'alias nécessaires pour skills, la section Compétences utilise directement badges
-
-function renderBadges(preset: string[]) {
-  const presetBadges = preset
-    .map((key) => BADGE_DEFS[key])
-    .filter(Boolean)
-    .map((def) => {
-      const label = encodeURIComponent(def.label);
-      const color = def.color || "informational";
-      const logo = def.logo ? `&logo=${encodeURIComponent(def.logo)}` : "";
-      return `![${def.label}](https://img.shields.io/badge/${label}-${color}?style=flat${logo}&logoColor=white)`;
-    });
-
-  return presetBadges.join("\n");
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-function renderBadgesHtml(preset: string[]) {
-  const imgs = preset
-    .map((key) => BADGE_DEFS[key])
-    .filter(Boolean)
-    .map((def) => {
-      const label = encodeURIComponent(def.label);
-      const color = def.color || "informational";
-      const logo = def.logo ? `&logo=${encodeURIComponent(def.logo)}` : "";
-      const src = `https://img.shields.io/badge/${label}-${color}?style=flat${logo}&logoColor=white`;
-      return `<img alt="${def.label}" src="${src}" />`;
-    })
-    .join("\n");
+function heading(values: FormValues, level: 2 | 3, emoji: string, text: string): string {
+  const prefix = "#".repeat(level);
+  return values.style === "emoji" ? `${prefix} ${emoji} ${text}` : `${prefix} ${text}`;
+}
+
+function htmlHeading(values: FormValues, emoji: string, text: string): string {
+  return values.style === "emoji" ? `<h3>${emoji} ${text}</h3>` : `<h3>${text}</h3>`;
+}
+
+function allBadges(values: FormValues): BadgeDef[] {
+  const presets = values.badgesPreset.map((key) => BADGE_DEFS[key]).filter(Boolean);
+  return [...presets, ...parseCustomBadges(values.badgesCustom ?? "")];
+}
+
+// Style « Coloré » : badges grand format
+function badgeSize(values: FormValues) {
+  return values.style === "colorful" ? "for-the-badge" : "flat";
+}
+
+function renderBadges(values: FormValues, defs: BadgeDef[]): string {
+  return defs.map((def) => `![${def.label}](${badgeUrl(def, badgeSize(values))})`).join("\n");
+}
+
+function renderBadgesHtml(values: FormValues, defs: BadgeDef[]): string {
+  const imgs = defs.map((def) => `<img alt="${escapeHtml(def.label)}" src="${badgeUrl(def, badgeSize(values))}" />`).join("\n");
   return `<div>\n${imgs}\n</div>`;
 }
 
-// (obsolete) rendu en liste, remplacé par des badges
+/** Technos en HTML : rangée Skill Icons si demandée, badges pour celles sans icône. */
+function renderTechHtml(values: FormValues, defs: BadgeDef[]): string {
+  if (values.skillsDisplay !== "icons") return renderBadgesHtml(values, defs);
+  const withIcon = defs.filter((d) => d.skillIcon);
+  const without = defs.filter((d) => !d.skillIcon);
+  const parts: string[] = [];
+  if (withIcon.length) {
+    const alt = escapeHtml(withIcon.map((d) => d.label).join(", "));
+    parts.push(`<p><img alt="${alt}" src="${skillIconsUrl(withIcon.map((d) => d.skillIcon!))}" /></p>`);
+  }
+  if (without.length) parts.push(renderBadgesHtml(values, without));
+  return parts.join("\n");
+}
 
-function renderSoftSkills(preset: string[], custom: string) {
-  const customs = custom
+function allSoftSkills(values: FormValues): string[] {
+  const customs = (values.softSkillsCustom ?? "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  const all = [...preset, ...customs];
-  if (all.length === 0) return "";
-  return all.map((s) => `- ${s}`).join("\n");
+  return [...values.softSkillsPreset, ...customs];
 }
 
-function renderSoftSkillsHtml(preset: string[], custom: string) {
-  const customs = custom
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const all = [...preset, ...customs];
-  if (all.length === 0) return "";
-  return [
-    "<ul>",
-    ...all.map((s) => `<li>${s}</li>`),
-    "</ul>",
-  ].join("\n");
+function statsBase(values: FormValues): string {
+  return (values.statsBaseUrl || DEFAULT_STATS_BASE_URL).replace(/\/+$/, "");
 }
-// plus de rendu skillsAsBadges: on réutilise directement renderBadges pour "Compétences"
 
-export function generateReadme(values: FormValues): string {
-  const lines: string[] = [];
+// Couleur du calendrier de contributions (ghchart) assortie au thème des cartes
+const CHART_COLORS: Record<string, string> = {
+  default: "216e39",
+  radical: "fe428e",
+  tokyonight: "70a5fd",
+  github_dark: "2f81f7",
+};
 
-  const title = values.name || values.username || "Mon profil";
-  const heading = values.style === "emoji" ? `# ${title} ✨` : `# ${title}`;
-  lines.push(heading);
+// Couleur du texte animé, assortie au thème des cartes
+const TYPING_COLORS: Record<string, string> = {
+  default: "0369A1",
+  radical: "FE428E",
+  tokyonight: "70A5FD",
+  github_dark: "2F81F7",
+};
 
-  if (values.sections.bio && values.bio) {
-    lines.push("\n" + values.bio + "\n");
-  }
+// github-profile-trophy nomme ses thèmes différemment
+const TROPHY_THEMES: Record<string, string> = {
+  default: "flat",
+  radical: "radical",
+  tokyonight: "tokyonight",
+  github_dark: "darkhub",
+};
 
-  // Colonnes: Compétences (badges) vs Compétences 
-  if (values.sections.badges && values.sections.softSkills) {
-    const hard = renderBadgesHtml(values.badgesPreset);
-    const soft = renderSoftSkillsHtml(values.softSkillsPreset, values.softSkillsCustom);
-    lines.push(values.style === "emoji" ? "## 🛠️🤝 Compétences " : "## Compétences techniques");
-    lines.push(
-      [
-        "<table><tr>",
-        "<td>",
-        values.style === "emoji" ? "<h3>🛠️ Compétences</h3>" : "<h3>Compétences</h3>",
-        hard || "",
-        "</td>",
-        "<td>",
-        values.style === "emoji" ? "<h3>🤝 Compétences</h3>" : "<h3>Compétences</h3>",
-        soft || "",
-        "</td>",
-        "</tr></table>",
-      ].join("\n")
-    );
-    lines.push("");
-  } else {
-    if (values.sections.badges) {
-      lines.push(values.style === "emoji" ? "## 🛠️ Compétences" : "## Compétences");
-      const skills = renderBadges(values.badgesPreset);
-      if (skills) lines.push(skills);
-      lines.push("");
-    }
-    if (values.sections.softSkills) {
-      lines.push(values.style === "emoji" ? "## 🤝 Compétences" : "## Compétences");
-      const soft = renderSoftSkills(values.softSkillsPreset, values.softSkillsCustom);
-      if (soft) lines.push(soft);
-      lines.push("");
-    }
-  }
-  // Plus de section Badges séparée: renommée en Compétences
+// streak-stats n'a pas de thème « github_dark »
+const STREAK_THEMES: Record<string, string> = {
+  default: "default",
+  radical: "radical",
+  tokyonight: "tokyonight",
+  github_dark: "dark",
+};
 
-  if (values.sections.keySkills && values.keySkills?.length) {
-    const sectionTitle = values.style === "emoji" ? "## 💡 Compétences clés" : values.style === "colorful" ? "## 💡 Compétences clés" : "## Compétences clés";
-    lines.push(sectionTitle);
-    values.keySkills.slice(0, 3).forEach((item) => {
+type Renderer = (values: FormValues) => string[];
+
+const RENDERERS: Record<Exclude<SectionKey, "header">, Renderer> = {
+  typing: (v) => {
+    const lines = (v.typingLines ?? "").split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 5);
+    if (!lines.length) return [];
+    const color = TYPING_COLORS[v.statsTheme] ?? TYPING_COLORS.default;
+    const params = `font=Fira+Code&weight=500&size=22&pause=1000&color=${color}&center=true&vCenter=true&width=600`;
+    const src = `https://readme-typing-svg.demolab.com?${params}&lines=${lines.map(encodeURIComponent).join(";")}`;
+    // L'alt reprend le texte : l'animation n'est pas lisible par les lecteurs d'écran
+    return [`<p align="center"><img alt="${escapeHtml(lines.join(". "))}" src="${src}" /></p>`, ""];
+  },
+
+  bio: (v) => (v.bio ? [v.bio, ""] : []),
+
+  badges: (v) => {
+    const defs = allBadges(v);
+    if (!defs.length) return [];
+    const body = v.skillsDisplay === "icons" ? renderTechHtml(v, defs) : renderBadges(v, defs);
+    return [heading(v, 2, "🛠️", "Compétences techniques"), body, ""];
+  },
+
+  softSkills: (v) => {
+    const soft = allSoftSkills(v);
+    if (!soft.length) return [];
+    return [heading(v, 2, "🤝", "Soft skills"), soft.map((s) => `- ${s}`).join("\n"), ""];
+  },
+
+  keySkills: (v) => {
+    const items = (v.keySkills ?? []).slice(0, 3).filter((k) => k?.name?.trim());
+    if (!items.length) return [];
+    const lines = [heading(v, 2, "💡", "Compétences clés")];
+    items.forEach((item) => {
       const parts: string[] = [];
-      if (!item || !item.name?.trim()) return;
-      let line = values.style === "emoji" ? `- ⭐ ${item.name.trim()}` : `- ${item.name.trim()}`;
+      let line = v.style === "emoji" ? `- ⭐ ${item.name.trim()}` : `- ${item.name.trim()}`;
       if (item.repo?.trim()) parts.push(`[Dépôt](${item.repo.trim()})`);
       if (item.link?.trim()) parts.push(`[Ressource](${item.link.trim()})`);
       if (parts.length) line += ` — ${parts.join(" · ")}`;
       lines.push(line);
     });
     lines.push("");
-  }
+    return lines;
+  },
 
-  if (values.sections.stats && values.username) {
-    lines.push(values.style === "emoji" ? "## 📊 Statistiques GitHub" : "## Statistiques GitHub");
-    const theme = encodeURIComponent(values.statsTheme || "radical");
-    const uname = encodeURIComponent(values.username);
-    // Carte principale
-    lines.push(
-      `![Statistiques GitHub](https://github-readme-stats.vercel.app/api?username=${values.username}&show_icons=true&theme=${theme})`
-    );
-    lines.push("\n---\n");
-    // Deux cartes côte à côte
-    const topLangsImg = `https://github-readme-stats.vercel.app/api/top-langs/?username=${uname}&layout=compact&theme=dracula`;
-    const streakImg = `https://streak-stats.demolab.com?user=${uname}&theme=dracula&hide_border=true`;
-    lines.push(
+  projects: (v) => {
+    const repos = (v.pinnedRepos ?? "")
+      .split(/[,\n]/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, 6);
+    if (!repos.length) return [];
+    const theme = encodeURIComponent(v.statsTheme || "default");
+    const cards = repos.map((r) => {
+      const [owner, repo] = r.includes("/") ? r.split("/", 2) : [v.username, r];
+      if (!owner || !repo) return "";
+      const o = encodeURIComponent(owner);
+      const n = encodeURIComponent(repo);
+      return `<a href="https://github.com/${o}/${n}"><img alt="Dépôt ${escapeHtml(repo)}" src="${statsBase(v)}/api/pin/?username=${o}&repo=${n}&theme=${theme}" /></a>`;
+    });
+    return [heading(v, 2, "📌", "Projets épinglés"), `<p>\n${cards.filter(Boolean).join("\n")}\n</p>`, ""];
+  },
+
+  stats: (v) => {
+    if (!v.username) return [];
+    const theme = encodeURIComponent(v.statsTheme || "radical");
+    const uname = encodeURIComponent(v.username);
+    const base = statsBase(v);
+    const chartColor = CHART_COLORS[v.statsTheme] ?? CHART_COLORS.default;
+    return [
+      heading(v, 2, "📊", "Statistiques GitHub"),
+      `![Statistiques GitHub](${base}/api?username=${uname}&show_icons=true&theme=${theme})`,
+      "",
       [
         "<table><tr>",
-        "<td valign=\"top\">",
-        values.style === "emoji" ? "<h4>💻 Langages les plus utilisés</h4>" : "<h4>Langages les plus utilisés</h4>",
-        `<img alt=\"Langages les plus utilisés\" src=\"${topLangsImg}\" />`,
+        '<td valign="top">',
+        htmlHeading(v, "💻", "Langages les plus utilisés"),
+        `<img alt="Langages les plus utilisés" src="${base}/api/top-langs/?username=${uname}&layout=compact&theme=${theme}" />`,
         "</td>",
-        "<td valign=\"top\">",
-        values.style === "emoji" ? "<h4>🔥 Série de contributions</h4>" : "<h4>Série de contributions</h4>",
-        `<img alt=\"Série de contributions\" src=\"${streakImg}\" />`,
+        '<td valign="top">',
+        htmlHeading(v, "🔥", "Série de contributions"),
+        `<img alt="Série de contributions" src="https://streak-stats.demolab.com?user=${uname}&theme=${STREAK_THEMES[v.statsTheme] ?? "default"}&hide_border=true" />`,
         "</td>",
         "</tr></table>",
-      ].join("\n")
-    );
-    lines.push("\n---\n");
-    // Graphique d'activité large
-    lines.push(values.style === "emoji" ? "### 📈 Graphique d'activité" : "### Graphique d'activité");
-    lines.push(
-      `![Graphique d'activité GitHub](https://github-readme-activity-graph.vercel.app/graph?username=${uname}&theme=dracula)`
-    );
-    lines.push("");
-  }
+      ].join("\n"),
+      "",
+      heading(v, 3, "📈", "Contributions"),
+      `![Calendrier des contributions GitHub](https://ghchart.rshah.org/${chartColor}/${uname})`,
+      "",
+    ];
+  },
 
-  if (values.sections.links) {
-    lines.push(values.style === "emoji" ? "## 🔗 Liens" : "## Liens");
+  summaryCards: (v) => {
+    const cards = v.summaryCards ?? [];
+    if (!v.username || !cards.length) return [];
+    const uname = encodeURIComponent(v.username);
+    const theme = encodeURIComponent(v.statsTheme || "default");
+    const url = (card: string) => `https://github-profile-summary-cards.vercel.app/api/cards/${card}?username=${uname}&theme=${theme}`;
+    const lines = [heading(v, 2, "🗂️", "Résumé du profil")];
+    if (cards.includes("profile-details")) {
+      lines.push(`<p><img width="100%" alt="Activité du profil GitHub" src="${url("profile-details")}" /></p>`);
+    }
+    const small = cards.filter((c) => c !== "profile-details");
+    const alts: Record<string, string> = {
+      "repos-per-language": "Dépôts par langage",
+      "most-commit-language": "Langages les plus commités",
+      stats: "Statistiques GitHub",
+    };
+    if (small.length) {
+      lines.push(`<p>\n${small.map((c) => `<img width="32%" alt="${alts[c]}" src="${url(c)}" />`).join("\n")}\n</p>`);
+    }
+    lines.push("");
+    return lines;
+  },
+
+  trophies: (v) => {
+    if (!v.username) return [];
+    const base = (v.trophyBaseUrl || DEFAULT_TROPHY_BASE_URL).replace(/\/+$/, "");
+    const theme = TROPHY_THEMES[v.statsTheme] ?? "flat";
+    const src = `${base}/?username=${encodeURIComponent(v.username)}&theme=${theme}&no-frame=true&no-bg=true&margin-w=4&row=1&column=6`;
+    return [heading(v, 2, "🏆", "Trophées"), `<p><img alt="Trophées GitHub" src="${src}" /></p>`, ""];
+  },
+
+  links: (v) => {
     const badges: string[] = [];
-    if (values.links.github) {
-      badges.push(
-        `[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](${values.links.github})`
-      );
+    const size = badgeSize(v);
+    if (v.links.github) {
+      badges.push(`[![GitHub](https://img.shields.io/badge/GitHub-181717?style=${size}&logo=github&logoColor=white)](${v.links.github})`);
     }
-    if (values.links.linkedin) {
-      badges.push(
-        `[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white)](${values.links.linkedin})`
-      );
+    if (v.links.linkedin) {
+      badges.push(`[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=${size}&logo=linkedin&logoColor=white)](${v.links.linkedin})`);
     }
-    if (values.links.website) {
-      badges.push(
-        `[![Site web](https://img.shields.io/badge/Site%20web-0ea5e9?logoColor=white)](${values.links.website})`
-      );
+    if (v.links.website) {
+      badges.push(`[![Site web](https://img.shields.io/badge/Site%20web-0369a1?style=${size}&logoColor=white)](${v.links.website})`);
     }
-    if (badges.length) lines.push(badges.join("\n"));
-    lines.push("");
-  }
+    if (!badges.length) return [];
+    return [heading(v, 2, "🔗", "Liens"), badges.join("\n"), ""];
+  },
 
-  if (values.sections.fun && (values.funFact || values.quote)) {
-    lines.push(values.style === "emoji" ? "## 🎉 Fun" : "## Fun");
-    if (values.funFact) lines.push(values.style === "emoji" ? `- 🎯 Fun fact: ${values.funFact}` : `- Fun fact: ${values.funFact}`);
-    if (values.quote) lines.push(values.style === "emoji" ? `> 💬 ${values.quote}` : `> ${values.quote}`);
+  fun: (v) => {
+    if (!v.funFact && !v.quote) return [];
+    const lines = [heading(v, 2, "🎉", "Fun")];
+    if (v.funFact) lines.push(v.style === "emoji" ? `- 🎯 Fun fact : ${v.funFact}` : `- Fun fact : ${v.funFact}`);
+    if (v.funFact && v.quote) lines.push("");
+    if (v.quote) lines.push(v.style === "emoji" ? `> 💬 ${v.quote}` : `> ${v.quote}`);
     lines.push("");
-  }
+    return lines;
+  },
 
   // Changelog dynamique (GitClear ou autre image dynamique)
-  if (values.sections.changelog && values.changelogImageUrl) {
-    lines.push(values.style === "emoji" ? "## 📰 Changelog dynamique" : "## Changelog dynamique");
-    lines.push(`![Changelog](${values.changelogImageUrl})`);
-    lines.push("");
-  }
+  changelog: (v) =>
+    v.changelogImageUrl ? [heading(v, 2, "📰", "Changelog dynamique"), `![Changelog](${v.changelogImageUrl})`, ""] : [],
 
-  return lines.join("\n").trim() + "\n";
+  visitors: (v) =>
+    v.username
+      ? [
+          `![Visites du profil](https://komarev.com/ghpvc/?username=${encodeURIComponent(v.username)}&label=Visites&color=0369a1&style=flat)`,
+          "",
+        ]
+      : [],
+};
+
+/** Compétences techniques + soft skills côte à côte quand elles se suivent. */
+function renderSkillsTable(v: FormValues): string[] {
+  const defs = allBadges(v);
+  const soft = allSoftSkills(v);
+  if (!defs.length || !soft.length) return [...RENDERERS.badges(v), ...RENDERERS.softSkills(v)];
+  return [
+    heading(v, 2, "🧰", "Compétences"),
+    [
+      "<table><tr>",
+      '<td valign="top">',
+      htmlHeading(v, "🛠️", "Techniques"),
+      renderTechHtml(v, defs),
+      "</td>",
+      '<td valign="top">',
+      htmlHeading(v, "🤝", "Soft skills"),
+      "<ul>",
+      ...soft.map((s) => `<li>${escapeHtml(s)}</li>`),
+      "</ul>",
+      "</td>",
+      "</tr></table>",
+    ].join("\n"),
+    "",
+  ];
 }
 
+export function generateReadme(values: FormValues): string {
+  const lines: string[] = [];
+  const title = values.name || values.username || "Mon profil";
 
+  if (values.sections.header) {
+    const text = encodeURIComponent(title);
+    lines.push(
+      `<img width="100%" alt="" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=160&section=header&text=${text}&fontSize=42&fontAlignY=35" />`,
+      ""
+    );
+  }
+
+  lines.push(values.style === "emoji" ? `# ${title} ✨` : `# ${title}`, "");
+
+  const order = values.sectionOrder.filter((k) => k !== "header" && values.sections[k]) as Exclude<SectionKey, "header">[];
+  for (let i = 0; i < order.length; i++) {
+    const key = order[i];
+    const next = order[i + 1];
+    if ((key === "badges" && next === "softSkills") || (key === "softSkills" && next === "badges")) {
+      lines.push(...renderSkillsTable(values));
+      i++;
+      continue;
+    }
+    lines.push(...RENDERERS[key](values));
+  }
+
+  let out = lines.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+  if (values.embedConfig) {
+    // Invisible sur GitHub : permet de recoller le README dans l'outil pour le modifier
+    out += `\n<!-- ${CONFIG_MARKER} ${encodeConfig(values)} -->\n`;
+  }
+  return out;
+}
