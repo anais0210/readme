@@ -253,7 +253,8 @@ function analyse(md: string): ImportResult {
   // Trophées
   const trophy = md.match(/(https?:\/\/[^/\s"')]*troph[^/\s"')]*)\/?\?username=/);
   if (trophy) {
-    values.trophyBaseUrl = trophy[1];
+    // L'instance officielle est hors service : on garde le miroir par défaut
+    if (!/github-profile-trophy\.vercel\.app/.test(trophy[1])) values.trophyBaseUrl = trophy[1];
     mark("trophies", trophy[0]);
     recovered.push("trophées");
   }

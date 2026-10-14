@@ -2,16 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { ArrowLeft, ArrowRight, Eye, FileUp, Link2, Monitor, Moon, Sun } from "lucide-react";
+import { Eye, FileUp, Link2, Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { OutputPanel } from "@/components/OutputPanel";
 import { ImportDialog, type ImportDialogHandle } from "@/components/ImportDialog";
-import { Stepper, type StepInfo } from "@/components/Stepper";
-import { ProfileStep } from "@/components/steps/ProfileStep";
-import { SkillsStep } from "@/components/steps/SkillsStep";
-import { BlocksStep } from "@/components/steps/BlocksStep";
-import { FinishStep } from "@/components/steps/FinishStep";
-import { primaryButtonClass, secondaryButtonClass } from "@/components/form/ui";
+import { Wizard, type ImportSummary } from "@/components/wizard/Wizard";
+import { secondaryButtonClass } from "@/components/form/ui";
 import { DEFAULT_VALUES, decodeConfig, encodeConfig, normalizeValues, type FormValues } from "@/lib/config";
 import { parseReadme } from "@/lib/import";
 import { generateReadme } from "@/lib/template";
@@ -27,19 +23,21 @@ export default function Page() {
   const methods = useForm<FormValues>({ defaultValues: DEFAULT_VALUES, mode: "onChange" });
   const { watch, reset } = methods;
 
-  const [step, setStep] = useState(0);
   const [manualMarkdown, setManualMarkdown] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const [copied, setCopied] = useState<"markdown" | "link" | null>(null);
-  const [keptVersion, setKeptVersion] = useState<string | null>(null);
+  const [importSummary, setImportSummary] = useState<(ImportSummary & { at: number }) | null>(null);
+  const [importedText, setImportedText] = useState<string | null>(null);
   const loaded = useRef(false);
   const importDialog = useRef<ImportDialogHandle>(null);
-  const stepHeading = useRef<HTMLHeadingElement>(null);
 
+  const statusTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const announce = useCallback((message: string) => {
     // Vide puis remplit pour que le même message soit relu par les lecteurs d'écran
     setStatus("");
     requestAnimationFrame(() => setStatus(message));
+    clearTimeout(statusTimer.current);
+    statusTimer.current = setTimeout(() => setStatus(""), 8000);
   }, []);
 
   // Chargement : lien de partage (#c=…) en priorité, sinon dernière session
@@ -50,7 +48,7 @@ export default function Page() {
     if (fromHash) {
       reset(fromHash);
       history.replaceState(null, "", window.location.pathname);
-      announce("Configuration chargée depuis le lien de partage.");
+      announce("Réponses chargées depuis le lien de partage.");
     } else {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -72,22 +70,6 @@ export default function Page() {
     } catch {}
   }, [values]);
 
-  const steps: StepInfo[] = [
-    { title: "Profil", description: "Qui êtes-vous ?", warning: values.username ? undefined : "Pseudo GitHub manquant" },
-    { title: "Compétences", description: "Technos et qualités" },
-    { title: "Blocs", description: "Ce que le README affiche" },
-    { title: "Style & export", description: "Finaliser et publier" },
-  ];
-
-  function goToStep(index: number) {
-    setStep(index);
-    // Amène le focus au titre de l'étape pour les lecteurs d'écran et le clavier
-    requestAnimationFrame(() => {
-      stepHeading.current?.focus();
-      stepHeading.current?.scrollIntoView({ block: "nearest" });
-    });
-  }
-
   function flashCopied(kind: "markdown" | "link") {
     setCopied(kind);
     setTimeout(() => setCopied(null), 2000);
@@ -99,7 +81,7 @@ export default function Page() {
       flashCopied("markdown");
       announce("Markdown copié dans le presse-papiers.");
     } catch {
-      announce("La copie a échoué : ouvrez l’onglet Markdown et copiez le texte manuellement.");
+      announce("La copie a échoué : ouvre l’onglet Markdown et copie le texte à la main.");
     }
   }
 
@@ -108,7 +90,7 @@ export default function Page() {
     try {
       await navigator.clipboard.writeText(url);
       flashCopied("link");
-      announce("Lien de partage copié : il ouvre l’outil avec ce formulaire pré-rempli.");
+      announce("Lien de partage copié : il ouvre l’outil avec tes réponses.");
     } catch {
       announce("La copie du lien a échoué.");
     }
@@ -133,37 +115,26 @@ export default function Page() {
     const result = parseReadme(text);
     reset(result.values);
     setManualMarkdown(null);
-    if (result.source === "config") {
-      setKeptVersion(result.hasManualEdits ? text : null);
-      announce(
-        result.hasManualEdits
-          ? "Formulaire restauré. Ce README contenait des retouches manuelles qui ne sont pas reprises dans le formulaire."
-          : "Formulaire restauré à l’identique ✓"
-      );
-    } else {
-      setKeptVersion(null);
-      announce(
-        result.recovered.length
-          ? `README analysé. Retrouvé : ${result.recovered.join(", ")}. Vérifiez chaque étape, la reconstruction peut être incomplète.`
-          : "Rien de reconnaissable dans ce Markdown : le formulaire a été vidé."
-      );
-    }
-    goToStep(0);
+    setImportedText(result.hasManualEdits ? text : null);
+    setImportSummary({ source: result.source, recovered: result.recovered, hasManualEdits: result.hasManualEdits, at: Date.now() });
+    announce(
+      result.source === "config"
+        ? "README importé : toutes tes réponses sont restaurées."
+        : result.recovered.length
+          ? `README importé : ${result.recovered.length} éléments retrouvés.`
+          : "README importé, mais rien n’a été reconnu."
+    );
   }
 
   const currentTheme = mounted ? ((theme as keyof typeof THEME_LABELS) ?? "system") : "system";
   const nextTheme = THEME_CYCLE[(THEME_CYCLE.indexOf(currentTheme) + 1) % THEME_CYCLE.length];
   const ThemeIcon = currentTheme === "dark" ? Moon : currentTheme === "light" ? Sun : Monitor;
-  const isLast = step === steps.length - 1;
 
   return (
     <FormProvider {...methods}>
-      <header className="border-b border-slate-200 dark:border-slate-800">
+      <header className="border-b-2 border-slate-200 dark:border-slate-800">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4">
-          <div>
-            <h1 className="text-xl font-semibold">Générateur de README GitHub</h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Composez le README de votre profil en 4 étapes, avec l’aperçu en direct.</p>
-          </div>
+          <p className="text-xl font-bold text-slate-950 dark:text-slate-50">Générateur de README GitHub</p>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => importDialog.current?.open()} className={secondaryButtonClass}>
               <FileUp size={16} aria-hidden /> Importer un README
@@ -184,65 +155,35 @@ export default function Page() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6">
+      <main className="mx-auto max-w-7xl px-4 py-8">
+        <h1 className="sr-only">Générateur de README GitHub</h1>
         <p
           role="status"
           aria-live="polite"
-          className={status ? "mb-4 rounded-md border border-sky-700 bg-sky-50 px-3 py-2 text-sm dark:border-sky-400 dark:bg-sky-950/40" : "sr-only"}
+          className={status ? "mb-6 rounded-lg border-2 border-sky-800 bg-sky-50 px-4 py-3 text-base font-medium text-sky-950 dark:border-sky-300 dark:bg-sky-950 dark:text-sky-50" : "sr-only"}
         >
           {status}
         </p>
-        {keptVersion ? (
-          <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
-            <button
-              type="button"
-              onClick={() => {
-                setManualMarkdown(keptVersion);
-                setKeptVersion(null);
-                announce("Version retouchée conservée.");
-              }}
-              className={secondaryButtonClass}
-            >
-              Garder ma version retouchée
-            </button>
-            <button type="button" onClick={() => setKeptVersion(null)} className="underline">
-              Non, utiliser le formulaire
-            </button>
-          </div>
-        ) : null}
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <div className="space-y-6">
-            <Stepper steps={steps} current={step} onSelect={goToStep} />
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+          <div className="space-y-4">
             <a href="#resultat" className={`${secondaryButtonClass} lg:hidden`}>
-              <Eye size={16} aria-hidden /> Voir l’aperçu
+              <Eye size={16} aria-hidden /> Voir mon README
             </a>
-
-            <form onSubmit={(e) => e.preventDefault()} aria-labelledby="step-title" className="space-y-6">
-              <h2 id="step-title" ref={stepHeading} tabIndex={-1} className="text-2xl font-semibold focus:outline-none">
-                <span className="text-slate-600 dark:text-slate-400">{step + 1}/{steps.length} · </span>
-                {steps[step].title}
-              </h2>
-              {step === 0 ? <ProfileStep announce={announce} /> : null}
-              {step === 1 ? <SkillsStep /> : null}
-              {step === 2 ? <BlocksStep goToStep={goToStep} /> : null}
-              {step === 3 ? <FinishStep onCopy={copyToClipboard} onDownload={downloadFile} onShare={copyShareLink} /> : null}
-
-              <div className="flex justify-between gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
-                {step > 0 ? (
-                  <button type="button" onClick={() => goToStep(step - 1)} className={secondaryButtonClass}>
-                    <ArrowLeft size={16} aria-hidden /> {steps[step - 1].title}
-                  </button>
-                ) : (
-                  <span />
-                )}
-                {!isLast ? (
-                  <button type="button" onClick={() => goToStep(step + 1)} className={primaryButtonClass}>
-                    {steps[step + 1].title} <ArrowRight size={16} aria-hidden />
-                  </button>
-                ) : null}
-              </div>
-            </form>
+            <Wizard
+              announce={announce}
+              importSummary={importSummary}
+              onDismissImport={() => setImportSummary(null)}
+              onKeepManual={() => {
+                if (importedText) setManualMarkdown(importedText);
+                setImportedText(null);
+                setImportSummary((s) => (s ? { ...s, hasManualEdits: false } : s));
+                announce("Ta version retouchée est conservée pour l’aperçu et l’export.");
+              }}
+              onCopy={copyToClipboard}
+              onDownload={downloadFile}
+              onShare={copyShareLink}
+            />
           </div>
 
           <div id="resultat" className="scroll-mt-4 lg:sticky lg:top-4 lg:self-start">
@@ -255,7 +196,7 @@ export default function Page() {
               onImport={importMarkdown}
               onResetToForm={() => {
                 setManualMarkdown(null);
-                announce("Retouches annulées : retour à la version du formulaire.");
+                announce("Retouches annulées : retour à tes réponses.");
               }}
               onCopy={copyToClipboard}
               onDownload={downloadFile}

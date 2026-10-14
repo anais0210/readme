@@ -39,8 +39,8 @@ export function OutputPanel({ markdown, mounted, isManual, copied, onEdit, onImp
   }
 
   return (
-    <section aria-label="Résultat" className="flex flex-col rounded-xl border border-slate-200 dark:border-slate-800">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 p-2">
+    <section aria-label="Résultat" className="flex flex-col rounded-xl border-2 border-slate-800 dark:border-slate-300">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-800 dark:border-slate-300 p-2">
         <div role="tablist" aria-label="Affichage du résultat" className="flex gap-1" onKeyDown={onTabKey}>
           {TABS.map(({ id, label, Icon }) => (
             <button
@@ -58,7 +58,7 @@ export function OutputPanel({ markdown, mounted, isManual, copied, onEdit, onImp
               className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium ${
                 tab === id
                   ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                  : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                  : "text-slate-900 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800"
               }`}
             >
               <Icon size={16} aria-hidden /> {label}
@@ -80,11 +80,11 @@ export function OutputPanel({ markdown, mounted, isManual, copied, onEdit, onImp
       {isManual ? (
         <div role="status" className="m-2 space-y-2 rounded-md border border-amber-600 bg-amber-50 p-3 text-sm dark:border-amber-500 dark:bg-amber-950/40">
           <p>
-            ✎ <strong>Markdown retouché à la main.</strong> L’aperçu et l’export utilisent votre version ; les changements du formulaire ne s’appliquent plus.
+            ✎ <strong>Markdown retouché à la main.</strong> L’aperçu et l’export utilisent ta version ; tes réponses ne s’appliquent plus.
           </p>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => onImport(markdown)} className={primaryButtonClass}>
-              <Upload size={16} aria-hidden /> Reprendre dans le formulaire
+              <Upload size={16} aria-hidden /> Reprendre dans mes réponses
             </button>
             <button type="button" onClick={onResetToForm} className={secondaryButtonClass}>
               <RotateCcw size={16} aria-hidden /> Annuler mes retouches
@@ -100,7 +100,7 @@ export function OutputPanel({ markdown, mounted, isManual, copied, onEdit, onImp
             id="preview-cols"
             value={cols}
             onChange={(e) => setCols(Number(e.target.value))}
-            className="rounded-md border border-slate-300 bg-transparent px-2 py-1 dark:border-slate-700"
+            className="rounded-md border-2 border-slate-800 bg-transparent px-2 py-1 dark:border-slate-300"
           >
             <option className={optionClass} value={1}>1</option>
             <option className={optionClass} value={2}>2</option>
@@ -120,10 +120,10 @@ export function OutputPanel({ markdown, mounted, isManual, copied, onEdit, onImp
           onChange={(e) => onEdit(e.target.value)}
           spellCheck={false}
           aria-describedby="raw-markdown-hint"
-          className="h-[calc(100vh-20rem)] min-h-64 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 font-mono text-sm dark:border-slate-700"
+          className="h-[calc(100vh-20rem)] min-h-64 w-full rounded-lg border-2 border-slate-800 bg-transparent px-3 py-2 font-mono text-sm dark:border-slate-300"
         />
         <p id="raw-markdown-hint" className={hintClass}>
-          Retouchez librement le texte. Pour modifier un README existant, utilisez plutôt « Importer un README » en haut de page.
+          Retouche librement le texte. Pour modifier un README existant, utilise plutôt « Importer un README » en haut de page.
         </p>
       </div>
     </section>

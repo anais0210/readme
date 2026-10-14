@@ -4,16 +4,15 @@ Application Next.js permettant de composer un README de profil GitHub moderne, a
 
 ## Fonctionnalités
 
-Parcours en 4 étapes avec aperçu en direct (onglets Aperçu / Markdown) :
+Un parcours « une question à la fois », avec l’aperçu du README en direct à côté :
 
-1. **Profil** : identité, bio, liens, bouton « Remplir depuis GitHub », modèles de départ (formatrice, junior, freelance)
-2. **Compétences** : technos en badges ou en icônes (Skill Icons), recherche, technos libres (logo simple-icons), soft skills, compétences clés
-3. **Blocs** : chaque bloc s’active, se règle et se range sur place
-   - Bannière animée, texte animé (Typing SVG)
-   - Projets épinglés, stats GitHub, série de contributions, calendrier
-   - Cartes de résumé (github-profile-summary-cards), trophées (github-profile-trophy)
-   - Liens, fun fact / citation, changelog dynamique, compteur de visites
-4. **Style & export** : style des titres et des badges, thème des cartes, téléchargement, copie, lien de partage, guide de publication
+- Seul le pseudo GitHub est obligatoire, chaque autre question peut être passée
+- Un bouton récupère le nom, la bio et le site depuis le profil GitHub public
+- Profils de départ (formatrice, junior, freelance) qui pré-remplissent bio, technos et blocs
+- Technos en badges ou en icônes (Skill Icons), recherche et technos libres (logo simple-icons)
+- Blocs à cocher : bannière, texte animé (Typing SVG), projets épinglés, stats, cartes de résumé, trophées, compétences clés, fun fact, compteur de visites, changelog. Les questions sur un bloc n’apparaissent que s’il est coché
+- Récapitulatif final : téléchargement, copie, lien de partage, guide de publication, réponses modifiables, ordre des blocs, options avancées
+- Interface à fort contraste : bordures 2 px, textes d’aide foncés, un seul bouton principal par écran, focus clavier épais
 
 Et aussi :
 
@@ -54,7 +53,7 @@ npm run dev
 
 - Rendu/sections: `lib/template.ts` · import: `lib/import.ts` · valeurs par défaut: `lib/config.ts`
 - Catalogue de technos: `lib/badges.ts` · modèles: `lib/presets.ts`
-- Écran: `app/page.tsx` et `components/steps/*`
+- Écran: `app/page.tsx` · questions du parcours: `components/wizard/questions.tsx`
 - Styles globaux: `app/globals.css` (inclut les styles GitHub)
 
 ## Déploiement sur Vercel

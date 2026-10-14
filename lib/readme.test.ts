@@ -115,6 +115,12 @@ describe("parseReadme", () => {
     expect(values.sections.stats).toBe(true);
   });
 
+  it("remplace l'instance officielle des trophées, hors service", () => {
+    const { values } = parseReadme("# Jo\n\n![T](https://github-profile-trophy.vercel.app/?username=jo)");
+    expect(values.sections.trophies).toBe(true);
+    expect(values.trophyBaseUrl).toBe(DEFAULT_VALUES.trophyBaseUrl);
+  });
+
   it("garde les Skill Icons hors catalogue comme technos libres", () => {
     const { values } = parseReadme('# Jo\n\n<img src="https://skillicons.dev/icons?i=ts,vue" />');
     expect(values.badgesPreset).toEqual(["TypeScript"]);

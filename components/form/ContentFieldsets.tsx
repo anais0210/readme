@@ -4,11 +4,11 @@ import { useFormContext } from "react-hook-form";
 import type { FormValues } from "@/lib/config";
 import { inputClass, labelClass, legendClass } from "./ui";
 
-export function LinksFieldset() {
+export function LinksFieldset({ srLegend = false }: { srLegend?: boolean }) {
   const { register } = useFormContext<FormValues>();
   return (
     <fieldset className="space-y-3">
-      <legend className={legendClass}>Liens</legend>
+      <legend className={srLegend ? "sr-only" : legendClass}>Liens</legend>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className={labelClass} htmlFor="lgh">GitHub (URL profil)</label>

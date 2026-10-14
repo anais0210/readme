@@ -5,7 +5,7 @@ import { useFormContext } from "react-hook-form";
 import { Check } from "lucide-react";
 import { BADGE_CATEGORIES, BADGE_DEFS, SOFT_SKILLS } from "@/lib/badges";
 import type { FormValues } from "@/lib/config";
-import { chipClass, hintClass, inputClass, labelClass, legendClass } from "./ui";
+import { chipClass, choiceCardClass, hintClass, inputClass, labelClass, legendClass } from "./ui";
 
 function useToggleArray(field: "badgesPreset" | "softSkillsPreset") {
   const { watch, setValue } = useFormContext<FormValues>();
@@ -44,7 +44,7 @@ const DISPLAY_OPTIONS = [
   },
 ] as const;
 
-export function BadgesFieldset() {
+export function BadgesFieldset({ srLegend = false }: { srLegend?: boolean }) {
   const { register } = useFormContext<FormValues>();
   const { selected, toggle } = useToggleArray("badgesPreset");
   const [query, setQuery] = useState("");
@@ -59,23 +59,7 @@ export function BadgesFieldset() {
 
   return (
     <fieldset className="space-y-3">
-      <legend className={legendClass}>Compétences techniques</legend>
-      <div role="radiogroup" aria-label="Affichage des technos" className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {DISPLAY_OPTIONS.map((opt) => (
-          <label
-            key={opt.value}
-            className="flex cursor-pointer flex-col gap-2 rounded-md border border-slate-300 dark:border-slate-700 p-3 has-[:checked]:border-sky-700 has-[:checked]:ring-2 has-[:checked]:ring-sky-700/30 dark:has-[:checked]:border-sky-400"
-          >
-            <span className="flex items-center gap-2 text-sm font-medium">
-              <input type="radio" value={opt.value} {...register("skillsDisplay")} />
-              {opt.label}
-            </span>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={opt.example} alt="" className="h-6 self-start" />
-            <span className={hintClass}>{opt.hint}</span>
-          </label>
-        ))}
-      </div>
+      <legend className={srLegend ? "sr-only" : legendClass}>Compétences techniques</legend>
       <p className={hintClass} aria-live="polite">{selected.size} techno{selected.size > 1 ? "s" : ""} sélectionnée{selected.size > 1 ? "s" : ""}</p>
       <div>
         <label className={labelClass} htmlFor="badge-search">Rechercher une techno</label>
@@ -88,14 +72,14 @@ export function BadgesFieldset() {
           placeholder="react, docker, php…"
         />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {categories.map(([category, items]) => {
           const count = items.filter((k) => selected.has(k)).length;
           return (
-            <details key={category} open={!!q} className="rounded-md border border-slate-300 dark:border-slate-700">
+            <details key={category} open={!!q} className="rounded-lg border-2 border-slate-800 dark:border-slate-300">
               <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium">
                 {category}
-                {count ? <span className="ml-1 text-slate-600 dark:text-slate-400">({count})</span> : null}
+                {count ? <span className="ml-1 text-slate-700 dark:text-slate-300">({count})</span> : null}
               </summary>
               <div className="px-3 pb-3">
                 <div className="flex flex-wrap gap-2 mt-2">
@@ -108,7 +92,7 @@ export function BadgesFieldset() {
           );
         })}
         {categories.length === 0 ? (
-          <p className="text-sm">Aucune techno trouvée : ajoutez-la ci-dessous.</p>
+          <p className="text-sm">Aucune techno trouvée : ajoute-la ci-dessous.</p>
         ) : null}
       </div>
       <div>
@@ -122,12 +106,35 @@ export function BadgesFieldset() {
   );
 }
 
-export function SoftSkillsFieldset() {
+/** Affichage des technos : badges shields ou rangée Skill Icons. */
+export function SkillsDisplayChoice() {
+  const { register } = useFormContext<FormValues>();
+  return (
+    <fieldset>
+      <legend className="sr-only">Affichage des technos</legend>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {DISPLAY_OPTIONS.map((opt) => (
+          <label key={opt.value} className={`${choiceCardClass} flex-col`}>
+            <span className="flex items-center gap-2 text-base font-semibold">
+              <input type="radio" value={opt.value} {...register("skillsDisplay")} className="h-5 w-5 accent-slate-950 dark:accent-slate-50" />
+              {opt.label}
+            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={opt.example} alt="" className="h-8 self-start" />
+            <span className={hintClass}>{opt.hint}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+export function SoftSkillsFieldset({ srLegend = false }: { srLegend?: boolean }) {
   const { register } = useFormContext<FormValues>();
   const { selected, toggle } = useToggleArray("softSkillsPreset");
   return (
     <fieldset className="space-y-3">
-      <legend className={legendClass}>Soft skills</legend>
+      <legend className={srLegend ? "sr-only" : legendClass}>Soft skills</legend>
       <div className="flex flex-wrap gap-2">
         {SOFT_SKILLS.map((ss) => (
           <Chip key={ss} label={ss} selected={selected.has(ss)} onClick={() => toggle(ss)} />
@@ -141,14 +148,14 @@ export function SoftSkillsFieldset() {
   );
 }
 
-export function KeySkillsFieldset() {
+export function KeySkillsFieldset({ srLegend = false }: { srLegend?: boolean }) {
   const { register } = useFormContext<FormValues>();
   return (
     <fieldset className="space-y-3">
-      <legend className={legendClass}>Compétences clés (jusqu’à 3)</legend>
-      <p className={hintClass}>Une compétence dont vous êtes fier·e, avec un dépôt ou une ressource qui la prouve.</p>
+      <legend className={srLegend ? "sr-only" : legendClass}>Compétences clés (jusqu’à 3)</legend>
+      <p className={hintClass}>Une compétence dont tu es fier·e, avec un dépôt ou une ressource qui la prouve.</p>
       {[0, 1, 2].map((i) => (
-        <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-2 rounded-md border border-slate-200 dark:border-slate-800 p-2">
+        <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-2 rounded-lg border-2 border-slate-800 dark:border-slate-300 p-2">
           <div>
             <label className={labelClass} htmlFor={`ks-name-${i}`}>Compétence {i + 1}</label>
             <input id={`ks-name-${i}`} {...register(`keySkills.${i}.name` as const)} className={inputClass} placeholder="Accessibilité (RGAA)" />

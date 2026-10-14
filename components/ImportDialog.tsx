@@ -38,7 +38,7 @@ export const ImportDialog = forwardRef<ImportDialogHandle, Props>(function Impor
     <dialog
       ref={dialog}
       aria-labelledby="import-title"
-      className="m-auto w-[min(42rem,calc(100vw-2rem))] rounded-xl border border-slate-300 bg-[var(--background)] p-0 text-[var(--foreground)] shadow-xl backdrop:bg-black/50 dark:border-slate-700"
+      className="m-auto w-[min(42rem,calc(100vw-2rem))] rounded-xl border-2 border-slate-800 bg-[var(--background)] p-0 text-[var(--foreground)] shadow-xl backdrop:bg-black/50 dark:border-slate-300"
     >
       <form
         method="dialog"
@@ -60,7 +60,7 @@ export const ImportDialog = forwardRef<ImportDialogHandle, Props>(function Impor
           </button>
         </div>
         <div>
-          <label htmlFor="import-text" className={labelClass}>Collez le Markdown</label>
+          <label htmlFor="import-text" className={labelClass}>Colle le Markdown</label>
           <textarea
             id="import-text"
             value={text}
